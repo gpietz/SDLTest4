@@ -3,6 +3,8 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include "Audio.h"
+#include "TextureManager.h"
+#include "RenderContext.h"
 
 class Application {
 public:
@@ -12,12 +14,16 @@ public:
     void run();
 
 private:
-    SDL_Window*  m_window;
-    SDL_Surface* m_window_surface;
-    SDL_Event    m_window_event;
-    bool         m_keep_running;
+    SDL_Window*     m_window;
+    SDL_Surface*    m_window_surface;
+    SDL_Renderer*   m_renderer;
+    SDL_Event       m_window_event { };
+    bool            m_keep_running;
+    RenderContext*  m_renderContext;
 
-    std::unique_ptr<Audio> m_audio;
+    // Subsystems
+    Audio*          m_audio;
+    TextureManager* m_textures;
 
     void update();
     void draw();

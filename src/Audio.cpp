@@ -1,6 +1,6 @@
 #include <SDL_mixer.h>
 #include "Audio.h"
-#include "IoHelpers.h"
+#include "helpers/IoHelpers.h"
 
 const int AUDIO_FLAGS = MIX_INIT_OGG | MIX_INIT_MOD;
 
@@ -11,14 +11,13 @@ Audio::Audio() {
         return;
     }
     std::cout << "Initialized mixer." << std::endl;
-    std::cout << "Current directory: " << getCurrentDirectory() << std::endl;
 }
 
 Audio::~Audio() {
 }
 
-void Audio::playStreamed(const char *filename) {
-    if (Mix_OpenAudio(44100,  MIX_DEFAULT_FORMAT, 2,  4096) == -1) {
+void Audio::playStreamed(const char *filename, bool loop) {
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2,  4096) == -1) {
         std::cerr << "Failed to open mixer with certain audio format!" << std::endl;
         std::cerr << "Mix_OpenAudio: " << Mix_GetError() << std::endl;
         return;
@@ -32,8 +31,11 @@ void Audio::playStreamed(const char *filename) {
         return;
     }
 
-    if (Mix_PlayMusic(music, 0) == -1) {
+    if (Mix_PlayMusic(music, loop ? -1 : 0) == -1) {
         std::cerr << "Unable to play ogg file: " << Mix_GetError() << std::endl;
         return;
     }
+
+    std::cout << "Playing music: " << filename << std::endl;
+    m_streamMusic = music;
 }

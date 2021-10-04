@@ -8,5 +8,8 @@ public:
     Audio();
     ~Audio();
 
-    void playStreamed(const char* filename);
+    void playStreamed(const char* filename, bool loop);
+
+private:
+    void* m_streamMusic;
 };
