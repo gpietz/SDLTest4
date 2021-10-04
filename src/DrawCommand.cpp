@@ -40,25 +40,22 @@ namespace DrawCommands {
     void DrawImage::render(const RenderContext* renderContext) noexcept {
         assert(renderContext != nullptr);
 
-        auto texture_mgr    = renderContext->m_textureManager;
-        auto texture_handle = texture_mgr->getTexture(m_texture.c_str());
-        auto texture_rect   = texture_mgr->getRect(texture_handle);
-        auto texture        = texture_mgr->getTextureByName(m_texture.c_str());
-
-        auto target_rect = std::unique_ptr<SDL_Rect>(SdlHelpers::createRectNew(texture_rect.get()));
+        auto texture_mgr = renderContext->m_textureManager;
+        auto texture     = texture_mgr->getTexture(m_texture.c_str());
+        auto target_rect = SdlHelpers::createRect(0, 0, texture->getWidth(), texture->getHeight());
 
         if (m_position == nullptr) {
             // if no position is given in the DrawImage command the texture will be centered
             int target_width = 0, target_height = 0;
             SDL_GetRendererOutputSize(renderContext->m_renderer, &target_width, &target_height);
-            target_rect->x = (target_width/2 - texture_rect->w/2);
-            target_rect->y = (target_height/2 - texture_rect->h/2);
+            target_rect.x = (target_width/2 - texture->getWidth()/2);
+            target_rect.y = (target_height/2 - texture->getHeight()/2);
         } else {
-            target_rect->x = m_position->x;
-            target_rect->y = m_position->y;
+            target_rect.x = m_position->x;
+            target_rect.y = m_position->y;
         }
 
-        SDL_RenderCopyEx(renderContext->m_renderer, texture.get(), texture_rect.get(), target_rect.get(),
+        SDL_RenderCopyEx(renderContext->m_renderer, texture->getSdlTexture(), nullptr, &target_rect,
                          m_rotation, nullptr, SDL_FLIP_NONE);
     }
 }

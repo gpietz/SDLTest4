@@ -57,6 +57,8 @@ Application::Application() {
 }
 
 Application::~Application() {
+    delete m_audio;
+    delete m_textures;
     SDL_FreeSurface(m_window_surface);
     SDL_DestroyWindow(m_window);
 }
