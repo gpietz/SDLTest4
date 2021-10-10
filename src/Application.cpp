@@ -1,16 +1,20 @@
 #include "Application.h"
-#include <SDL_image.h>
-
-#include <memory>
-
 #include "DrawBuffer.h"
+#include <SDL_image.h>
+#include <iostream>
+#include <format>
+#include <systems/RenderSystem.h>
+#include <systems/MoveSystem.h>
+#include "Components.h"
+#include "helpers/TimeHelper.h"
+#include "SpriteSheet.h"
 
-const auto TITLE         = "SDLTest4";
-const auto SCREEN_WIDTH  = 1024;
-const auto SCREEN_HEIGHT = 768;
+const auto TITLE          = "SDLTest4";
+const auto SCREEN_WIDTH   = 1024;
+const auto SCREEN_HEIGHT  = 768;
 const auto IMG_INIT_FLAGS = IMG_INIT_JPG | IMG_INIT_PNG;
 
-Application::Application() {
+Application::Application() : m_fps(std::chrono::milliseconds(16)) {
     m_keep_running = true;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
@@ -54,9 +58,21 @@ Application::Application() {
     m_audio = new Audio();
     m_textures = new TextureManager();
     m_renderContext = new RenderContext(m_renderer, m_textures);
+
+    m_spawner.set(m_textures);
+    m_spawner.set(m_renderContext);
+
+    auto redHatRun = new SpriteSheet();
+    if (!redHatRun->loadFromXmlFile("resources/gfx/redhatrun.xml", m_renderContext)) {
+        std::cerr << "Failed loading spritesheet!" << std::endl;
+        return;
+    }
+    m_renderContext->m_redHatRun = redHatRun;
+    m_spawner.set(redHatRun);
 }
 
 Application::~Application() {
+    delete m_renderContext;
     delete m_audio;
     delete m_textures;
     SDL_FreeSurface(m_window_surface);
@@ -65,14 +81,28 @@ Application::~Application() {
 
 void Application::run() {
     m_audio->playStreamed("resources/sfx/Juhani_Junkala-Stage2.ogg", true);
+    m_textures->getTexture("resources/gfx/powered.png", m_renderer);
     m_textures->getTexture("resources/gfx/bjarne.jpg", m_renderer);
+    m_textures->getTexture("resources/gfx/f1.png", m_renderer);
     update();
 }
 
 void Application::update() {
     Uint32 frameStart = 0, frameTime = 0, frameDelay = 50;
+
+    auto last = std::chrono::steady_clock::now();
     while (m_keep_running) {
+        const auto now = std::chrono::steady_clock::now();
+        const auto dt  = std::chrono::duration_cast<FDuration>(now - last);
+        if (dt < m_fps) {
+            continue;
+        }
+
+        last = now;
+
         frameStart = SDL_GetTicks();
+        m_spawner.update(m_registry, dt);
+        MoveSystem::update(m_registry, m_renderContext, dt);
         draw();
 
         while (SDL_PollEvent(&m_window_event) > 0) {
@@ -86,6 +116,12 @@ void Application::update() {
             }
         }
 
+        if (TimeHelper::HasTimeExpired(m_lastWindowTitleUpdate, 1000)) {
+            auto rocketCount = m_registry.view<Rocket>().size();
+            auto newTitle = std::format("{} | Rockets #{}", TITLE, rocketCount);
+            SDL_SetWindowTitle(m_window, newTitle.c_str());
+        }
+
         frameTime = SDL_GetTicks() - frameStart;
         if (frameDelay > frameTime) {
             SDL_Delay(frameDelay - frameTime);
@@ -96,9 +132,9 @@ void Application::update() {
 void Application::draw() {
     auto drawBuffer = DrawBuffer();
     drawBuffer.addCommand(new DrawCommands::ClearScreen(12, 0, 12, 255));
-    drawBuffer.addCommand(new DrawCommands::DrawImage("resources/gfx/bjarne.jpg"));
-    drawBuffer.submit(100);
+    drawBuffer.submit(0);
 
+    RenderSystem::draw(m_renderContext, m_registry);
     DrawBuffer::render(m_renderContext);
 }
 

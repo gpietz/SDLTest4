@@ -21,8 +21,7 @@ private:
     // case-insensitive string comparison predicate
     struct string_less_compare {
         bool operator() (const std::string& left, const std::string& right) const {
-            size_t max_size = std::max(left.size(), right.size());
-            return _strnicmp(left.c_str(), right.c_str(), max_size);
+            return ::stricmp(left.c_str(), right.c_str()) < 0;
         }
     };
 
@@ -32,3 +31,5 @@ private:
     HTextureMgr m_textures;
     NameIndex   m_textureNames;
 };
+
+typedef std::shared_ptr<TextureManager> SharedTextureManager;

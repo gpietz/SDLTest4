@@ -9,7 +9,7 @@
 #    define M_Assert(Export, Msg);
 #endif
 
-void __M_Assert(const char* expr_str, bool expr, const char* file, int line, const char* msg)
+inline void __M_Assert(const char* expr_str, bool expr, const char* file, int line, const char* msg)
 {
     if (!expr)
     {

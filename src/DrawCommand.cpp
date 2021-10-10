@@ -1,6 +1,8 @@
-#include <cassert>
 #include <SDL2/SDL.h>
+#include <cmath>
+#include "core/Assert.h"
 #include "DrawCommand.h"
+#include "DrawHelper.h"
 
 namespace DrawCommands {
     /////////////////////////////////////////////////////////////////////////////
@@ -44,18 +46,45 @@ namespace DrawCommands {
         auto texture     = texture_mgr->getTexture(m_texture.c_str());
         auto target_rect = SdlHelpers::createRect(0, 0, texture->getWidth(), texture->getHeight());
 
-        if (m_position == nullptr) {
-            // if no position is given in the DrawImage command the texture will be centered
-            int target_width = 0, target_height = 0;
-            SDL_GetRendererOutputSize(renderContext->m_renderer, &target_width, &target_height);
-            target_rect.x = (target_width/2 - texture->getWidth()/2);
-            target_rect.y = (target_height/2 - texture->getHeight()/2);
-        } else {
-            target_rect.x = m_position->x;
-            target_rect.y = m_position->y;
+        DrawHelper::completeTargetRect(renderContext, texture, &target_rect, m_position.get());
+        DrawHelper::drawImage(renderContext, texture, nullptr, &target_rect, m_rotation, nullptr, SDL_FLIP_NONE);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // DrawSprite
+    /////////////////////////////////////////////////////////////////////////////
+
+    DrawSprite::DrawSprite(const Sprite *sprite) : sprite(sprite) {
+    }
+
+    void DrawSprite::render(const RenderContext* renderContext) noexcept {
+        assert(renderContext != nullptr);
+
+        auto texture = sprite->getTexture();
+        auto targetRect = SdlHelpers::createRect(0, 0, texture->getWidth(), texture->getHeight());
+
+        DrawHelper::completeTargetRect(renderContext, texture, &targetRect, position.get());
+        DrawHelper::drawImage(renderContext, texture, nullptr, &targetRect, rotation, nullptr, sprite->flipMode, opacity);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    // DrawSpriteSheet
+    /////////////////////////////////////////////////////////////////////////////
+    DrawSpriteSheet::DrawSpriteSheet(const SpriteSheet* spriteSheet) : spriteSheet(spriteSheet) {
+    }
+
+    void DrawSpriteSheet::render(const RenderContext* renderContext) noexcept {
+        assert(renderContext != nullptr);
+
+        auto sourceRect = const_cast<SpriteSheet*>(spriteSheet)->getRectAsValue();
+        auto targetRect = SdlHelpers::createRect(0, 0, sourceRect.w, sourceRect.h);
+
+        if (position != nullptr) {
+            targetRect.x = position->x;
+            targetRect.y = position->y;
         }
 
-        SDL_RenderCopyEx(renderContext->m_renderer, texture->getSdlTexture(), nullptr, &target_rect,
-                         m_rotation, nullptr, SDL_FLIP_NONE);
+        auto texture = renderContext->m_textureManager->getTexture(spriteSheet->getTexture().c_str());
+        DrawHelper::drawImage(renderContext, texture, &sourceRect, &targetRect, 0, nullptr, SDL_FLIP_NONE);
     }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TextureAtlas imagePath="resources/gfx/redhatrun.png" width="278" height="223">
+    <sprite n="redhatrun.png" x="70" y="115" w="67" h="107" oX="54" oY="8" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="69" y="1" w="67" h="112" oX="53" oY="6" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="138" y="1" w="71" h="109" oX="52" oY="4" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="1" y="116" w="67" h="106" oX="53" oY="7" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="139" y="112" w="67" h="108" oX="54" oY="8" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="1" y="1" w="66" h="113" oX="53" oY="6" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="211" y="1" w="66" h="108" oX="52" oY="5" oW="150" oH="128"/>
+    <sprite n="redhatrun.png" x="211" y="111" w="66" h="108" oX="53" oY="6" oW="150" oH="128"/>
+</TextureAtlas>

@@ -24,8 +24,11 @@ bool Texture::loadFromFile(const char* filename, SDL_Renderer* renderer) noexcep
     m_width  = image_surface->w;
     m_height = image_surface->h;
 
+    std::cout << "Loaded texture: " << filename << " (" << m_width << "x" << m_height << ")" << std::endl;
+
     SDL_FreeSurface(image_surface);
-    image_surface = nullptr;
+    SDL_SetTextureBlendMode(m_texture, SDL_BLENDMODE_BLEND);
+
     return true;
 }
 
@@ -33,8 +36,8 @@ void Texture::Texture::unload() noexcept {
     if (m_texture != nullptr) {
         SDL_DestroyTexture(m_texture);
         m_texture = nullptr;
+        std::cout << "Unloaded image: " << m_name << std::endl;
     }
-    std::cout << "Unloaded image: " << m_name << std::endl;
     reset();
 }
 
